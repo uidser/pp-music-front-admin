@@ -70,7 +70,7 @@ export const constantRoutes = [
       {
         path: 'attributeGroupAdmin',
         name: 'AttributeGroupAdmin',
-        component: () => import('@/components/attributegroup/admin'),
+        component: () => import('@/components/dictionary/attributegroup/admin'),
         meta: { title: '属性分组设置', icon: '' }
       }
     ]
@@ -87,6 +87,12 @@ export const constantRoutes = [
         name: 'SongAdmin',
         component: () => import('@/components/song/admin'),
         meta: { title: '歌曲设置', icon: '' }
+      },
+      {
+        path: 'admin/add',
+        name: 'SongAddAdmin',
+        component: () => import('@/components/song/add/index'),
+        meta: { title: '新增歌曲/MV', icon: '' }
       }
     ]
   },

@@ -28,5 +28,18 @@ export default {
       method: 'put',
       data: attributeGroup
     })
+  },
+  edit(attributeGroup) {
+    return request({
+      url: BASE_ATTRIBUTEGROUP_URL + '/edit',
+      method: 'post',
+      data: attributeGroup
+    })
+  },
+  delete(id) {
+    return request({
+      url: BASE_ATTRIBUTEGROUP_URL + '/delete/' + id,
+      method: 'delete'
+    })
   }
 }

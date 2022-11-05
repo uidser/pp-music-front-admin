@@ -8,5 +8,11 @@ export default {
       url: BASE_CATEGORY_URL + '/getAll',
       method: 'get'
     })
+  },
+  getAttributeGroupAndAttributeByCategoryId(id) {
+    return request({
+      url: BASE_CATEGORY_URL + '/getAttributeGroupAndAttributeByCategoryId/' + id,
+      method: 'get'
+    })
   }
 }

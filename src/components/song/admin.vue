@@ -6,6 +6,7 @@
     </el-date-picker>
     <el-button type="primary" icon="el-icon-search" @click="search"></el-button>
     <el-button type="primary" icon="el-icon-delete" @click="batchDelete">批量删除</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="$router.push('/song/admin/add?categoryType=1')"></el-button>
     <el-table
       ref="multipleTable"
       :data="songList"
@@ -13,8 +14,7 @@
       style="width: 100%"
       @selection-change="handleSelectionChange">
       <el-table-column
-        type="selection"
-        width="55">
+        type="selection">
       </el-table-column>
       <el-table-column
         prop="id"
