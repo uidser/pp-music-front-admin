@@ -1,15 +1,11 @@
 <template>
   <div style="width: 99%; margin: 10px auto;">
-    <el-input v-model="queryVo.QueryText" placeholder="请输入内容" style="width: 10%; margin: 0px 10px"></el-input>
-    <el-date-picker v-model="queryVo.startTime" type="datetime" placeholder="选择开始日期时间" value-format="yyyy-MM-dd:HH:mm:ss"></el-date-picker>
-    <el-date-picker v-model="queryVo.endTime" type="datetime" placeholder="选择结束时间" value-format="yyyy-MM-dd:HH:mm:ss" style="margin: 0px 10px">
-    </el-date-picker>
-    <el-button type="primary" icon="el-icon-search" @click="search"></el-button>
-    <el-button type="primary" icon="el-icon-delete" @click="batchDelete">批量删除</el-button>
-    <el-button type="primary" icon="el-icon-plus" @click="$router.push('/song/admin/add?categoryType=1')"></el-button>
+    <el-input v-model="queryVo.QueryText" placeholder="请输入内容" style="width: 10%;"></el-input>
+    <el-button type="primary" icon="el-icon-search" @click="search" style="margin: 0px 10px"></el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="insert"></el-button>
     <el-table
       ref="multipleTable"
-      :data="songList"
+      :data="categoryList"
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange">
@@ -18,19 +14,11 @@
       </el-table-column>
       <el-table-column
         prop="id"
-        label="歌曲ID">
+        label="分类ID">
       </el-table-column>
       <el-table-column
         prop="name"
-        label="歌曲名称">
-      </el-table-column>
-      <el-table-column
-        prop="author"
-        label="歌手名称">
-      </el-table-column>
-      <el-table-column
-        prop="publishDate"
-        label="发布日期">
+        label="分类名称">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -67,29 +55,53 @@
       :current-page="currentPage"
       @current-change="changeCurrent">
     </el-pagination>
+    <el-dialog title="收货地址" :visible.sync="showDialog">
+      <el-form :model="category">
+        <el-form-item label="ID" label-width="100px" v-if="category.id">
+          <el-input v-model="category.id" disabled autocomplete="off" style="width: 205px;"></el-input>
+        </el-form-item>
+        <el-form-item label="分类名称" label-width="100px">
+          <el-input v-model="category.name" autocomplete="off" style="width: 205px;"></el-input>
+        </el-form-item>
+        <el-form-item label="显示状态" label-width="100px">
+          <el-switch
+            style="display: block"
+            v-model="category.showStatus"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="显示"
+            inactive-text="不显示"
+            :active-value="1"
+            :inactive-value="0">
+          </el-switch>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="commit">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import songApi from '@/api/song/index'
+import categoryApi from '@/api/category/index'
+import category from "@/api/category/index";
 export default {
   name: "admin",
   data() {
     return {
-      songList: [],
+      queryVo: {},
+      categoryList: [],
       total: 0,
       pageSize: 0,
       currentPage: 1,
-      queryVo: {
-        startTime: null,
-        endTime: null,
-        QueryText: '',
-        limit: 10
-      }
+      showDialog: false,
+      category: {}
     }
   },
   created() {
-    this.page({ current: this.currentPage, limit: 10 })
+    this.page({ ...this.queryVo, current: this.currentPage, limit: 10 })
   },
   methods: {
     remove(id) {
@@ -98,11 +110,15 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        songApi.batchDelete([id]).then(
+        if (id instanceof Array) {
+
+        } else {
+          id = [id]
+        }
+        categoryApi.batchDelete(id).then(
           response => {
             if (response.code === 200) {
               this.$message.success('删除成功')
-              this.page({ current: 1, limit: 10 })
             } else {
               this.$message.error('删除失败')
             }
@@ -114,56 +130,66 @@ export default {
           message: '已取消删除'
         })
       })
+
     },
-    batchDelete() {
-      this.$confirm('此操作将永久删除这些记录, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let array = new Array()
-        for (let i = 0; i < this.multipleSelection.length; i++) {
-          array.push(this.multipleSelection[i].id)
-        }
-        songApi.batchDelete(array).then(
+    edit(id) {
+
+    },
+    commit() {
+      if (this.category.id) {
+        categoryApi.edit(this.category).then(
           response => {
             if (response.code === 200) {
-              this.$message.success('批量删除成功')
-              this.page({ current: 1, limit: 10 })
+              this.$message.success('修改成功')
+              this.cancel()
             } else {
-              this.$message.error('批量删除失败')
+              this.$message.error('修改失败')
             }
           }
         )
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
+      } else {
+        categoryApi.insert(this.category).then(
+          response => {
+            if (response.code === 200) {
+              this.$message.success('新增成功')
+              this.cancel()
+            } else {
+              this.$message.error('新增失败')
+            }
+          }
+        )
+      }
+    },
+    cancel() {
+      this.showDialog = false
+      this.category = {}
+    },
+    changeCurrent(current) {
+      this.page({ ...this.queryVo, current, limit: 10 })
+    },
+    insert() {
+      this.showDialog = true
     },
     search() {
-      this.page({ current: 1, ...this.queryVo, startTime: this.queryVo.startTime.replace('+', '%20') })
+      this.page({ ...this.queryVo, current: 1, limit: 10 })
     },
-    changeShowStatus(event, songId) {
-      songApi.changeShowStatus(songId, event).then(
+    changeShowStatus(event, id) {
+      categoryApi.changeShowStatus(event, id).then(
         response => {
           if (response.code === 200) {
             this.$message.success('修改成功')
+            this.page({ ...this.queryVo, current: 1, limit: 10 })
           } else {
             this.$message.error('修改失败')
           }
         }
       )
     },
-    changeCurrent(current) {
-      this.page({ current, limit: 10 })
-    },
     page(queryVo) {
-      songApi.page(queryVo).then(
+      categoryApi.page(queryVo).then(
         response => {
           if (response.code === 200) {
-            this.songList = response.data.list
+            this.categoryList = response.data.list
             this.total = response.data.total
             this.pageSize = response.data.pageSize
             this.currentPage = response.data.currentPage
@@ -175,7 +201,7 @@ export default {
       if (rows) {
         rows.forEach(row => {
           this.$refs.multipleTable.toggleRowSelection(row)
-        });
+        })
       } else {
         this.$refs.multipleTable.clearSelection()
       }

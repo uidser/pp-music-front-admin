@@ -72,6 +72,12 @@ export const constantRoutes = [
         name: 'AttributeGroupAdmin',
         component: () => import('@/components/dictionary/attributegroup/admin'),
         meta: { title: '属性分组设置', icon: '' }
+      },
+      {
+        path: 'categoryAdmin',
+        name: 'CategoryAdmin',
+        component: () => import('@/components/category/admin'),
+        meta: { title: '分类设置', icon: '' }
       }
     ]
   },
@@ -80,18 +86,24 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/admin',
     name: 'Song',
-    meta: { title: '歌曲管理', icon: '' },
+    meta: { title: '媒体管理', icon: '' },
     children: [
       {
-        path: 'admin',
+        path: 'songAdmin',
         name: 'SongAdmin',
-        component: () => import('@/components/song/admin'),
-        meta: { title: '歌曲设置', icon: '' }
+        component: () => import('@/components/media/song/admin'),
+        meta: { title: '歌曲管理', icon: '' }
+      },
+      {
+        path: 'mvAdmin',
+        name: 'MvAdmin',
+        component: () => import('@/components/media/mv/admin'),
+        meta: { title: 'MV管理', icon: '' }
       },
       {
         path: 'admin/add',
         name: 'SongAddAdmin',
-        component: () => import('@/components/song/add/index'),
+        component: () => import('@/components/media/add/index'),
         meta: { title: '新增歌曲/MV', icon: '' }
       }
     ]

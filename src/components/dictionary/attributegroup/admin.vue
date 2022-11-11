@@ -83,7 +83,17 @@
         <el-form-item label="属性名称" label-width="150px">
           <el-input v-model="attribute.name" autocomplete="off" style="width: 205px"></el-input>
         </el-form-item>
-        <el-form-item label="显示状态" label-width="150px">
+        <el-form-item label="输入框组件名称" label-width="150px">
+          <el-select v-model="attribute.componentInputId" filterable placeholder="请选择">
+            <el-option
+              v-for="item in componentInputList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="快速展示" label-width="150px">
           <el-switch
             style="display: block"
             v-model="attribute.showStatus"
@@ -117,6 +127,7 @@
 </template>
 
 <script>
+import componentInputApi from '@/api/componentinput/index'
 import attributeApi from '@/api/attribute/index'
 import categoryApi from '@/api/category'
 import attributeGroupAPi from '@/api/attributegroup'
@@ -142,7 +153,8 @@ export default {
         }
       },
       expanded: 0,
-      tempAttrGroup: {}
+      tempAttrGroup: {},
+      componentInputList: []
     }
   },
   created() {
@@ -298,9 +310,15 @@ export default {
       this.attribute = {}
     },
     addAttribute(id) {
-      this.attribute.showStatus = 0
       this.expanded = id
       this.getAttributeGroupById(id)
+      componentInputApi.getAll().then(
+        response => {
+          if (response.code === 200) {
+            this.componentInputList = response.data
+          }
+        }
+      )
       this.showAttributeDialog = true
     },
     edit(id, flag) {

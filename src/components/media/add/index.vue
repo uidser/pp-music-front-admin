@@ -16,24 +16,18 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 320px;">
-        <div slot="header" class="clearfix">
-          <span>{{ attrGroup.groupName }}</span>
-        </div>
-        <el-form-item :label="attribute.name" v-for="attribute in attrGroup.attributeList" :key="attribute.id">
-          <el-input v-model="attribute.value"></el-input>
-        </el-form-item>
-      </el-card>
       <el-form-item label="歌曲名称">
         <el-input v-model="song.name" style="width: 220px;"></el-input>
       </el-form-item>
-      <el-form-item label="发布时间">
-        <el-date-picker
-          v-model="song.publishDate"
-          type="datetime"
-          placeholder="选择发布时间">
-        </el-date-picker>
-      </el-form-item>
+      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 400px;">
+        <div slot="header" class="clearfix">
+        <span>{{ attrGroup.groupName }}</span>
+        </div>
+        <el-form-item :label="attribute.name" v-for="attribute in attrGroup.attributeList" :key="attribute.id">
+<!--          <el-input v-model="attribute.value"></el-input>-->
+          <component :is="attribute.inputName" :attributeId="attribute.id" @updateAttributeValue="updateAttributeValue"></component>
+        </el-form-item>
+      </el-card>
       <el-form-item label="立即上架">
         <el-switch v-model="song.nowPublish" :active-value="1" :inactive-value="0"></el-switch>
       </el-form-item>
@@ -77,11 +71,23 @@
 </template>
 
 <script>
-import attributeApi from '@/api/attribute/index'
-import categoryApi from '@/api/category/index'
-import singerApi from '@/api/singer/index'
+import attributeAlbumInput from "@/components/attribute/attribute-album-input";
+import attributeInput from "@/components/attribute/attribute-input";
+import attributeSingerInput from "@/components/attribute/attribute-singer-input";
+import attributeTextAreaInput from "@/components/attribute/attribute-text-area-input";
+import attributeDateInput from "@/components/attribute/attribute-date-input";
+import attributeApi from '@/api/attribute'
+import categoryApi from '@/api/category'
+import singerApi from '@/api/singer'
 export default {
   name: "index",
+  components: {
+    attributeDateInput,
+    attributeSingerInput,
+    attributeTextAreaInput,
+    attributeInput,
+    attributeAlbumInput
+  },
   data() {
     return {
       step: 1,
@@ -99,6 +105,15 @@ export default {
     this.getALlCategoryList()
   },
   methods: {
+    updateAttributeValue(attributeId, value) {
+      this.attributeGroupList.map((attributeGroup) => {
+        attributeGroup.attributeList.map((attribute) => {
+          if (attribute.id === attributeId) {
+            attribute.value = value
+          }
+        })
+      })
+    },
     changeCategoryType(id) {
       categoryApi.getAttributeGroupAndAttributeByCategoryId(id).then(
         response => {
