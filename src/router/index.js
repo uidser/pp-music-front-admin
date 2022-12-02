@@ -82,10 +82,10 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/song',
+    path: '/media',
     component: Layout,
     redirect: '/admin',
-    name: 'Song',
+    name: 'Media',
     meta: { title: '媒体管理', icon: '' },
     children: [
       {
@@ -102,9 +102,9 @@ export const constantRoutes = [
       },
       {
         path: 'admin/add',
-        name: 'SongAddAdmin',
-        component: () => import('@/components/media/add/index'),
-        meta: { title: '新增歌曲/MV', icon: '' }
+        name: 'MediaAdd',
+        component: () => import('@/components/media/add/add'),
+        meta: { title: '新增媒体', icon: '' }
       }
     ]
   },
