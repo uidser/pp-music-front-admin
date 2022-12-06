@@ -86,7 +86,6 @@
 
 <script>
 import categoryApi from '@/api/category/index'
-import category from "@/api/category/index";
 export default {
   name: "admin",
   data() {
@@ -119,6 +118,7 @@ export default {
           response => {
             if (response.code === 200) {
               this.$message.success('删除成功')
+              this.page({ ...this.queryVo, current: 1, limit: 10 })
             } else {
               this.$message.error('删除失败')
             }
@@ -130,7 +130,6 @@ export default {
           message: '已取消删除'
         })
       })
-
     },
     edit(id) {
 
@@ -141,6 +140,7 @@ export default {
           response => {
             if (response.code === 200) {
               this.$message.success('修改成功')
+              this.page({ ...this.queryVo, current: 1, limit: 10 })
               this.cancel()
             } else {
               this.$message.error('修改失败')
@@ -153,6 +153,7 @@ export default {
             if (response.code === 200) {
               this.$message.success('新增成功')
               this.cancel()
+              this.page({ ...this.queryVo, current: 1, limit: 10 })
             } else {
               this.$message.error('新增失败')
             }

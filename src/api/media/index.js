@@ -9,5 +9,12 @@ export default {
       method: 'post',
       data: media
     })
+  },
+  getMediaByPage(queryVo) {
+    return request({
+      url: BASE_MEDIA_API + '/getMediaByPage',
+      method: 'get',
+      params: queryVo
+    })
   }
 }

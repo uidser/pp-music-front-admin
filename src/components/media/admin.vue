@@ -1,5 +1,13 @@
 <template>
   <div style="width: 99%; margin: 10px auto;">
+    <el-select v-model="mediaType" placeholder="请选择媒体类型" @change="changeMediaType">
+      <el-option
+        v-for="item in mediaTypeList"
+        :key="item.id"
+        :label="item.name"
+        :value="item.id">
+      </el-option>
+    </el-select>
     <el-input v-model="queryVo.QueryText" placeholder="请输入内容" style="width: 10%; margin: 0px 10px"></el-input>
     <el-date-picker v-model="queryVo.startTime" type="datetime" placeholder="选择开始日期时间" value-format="yyyy-MM-dd:HH:mm:ss"></el-date-picker>
     <el-date-picker v-model="queryVo.endTime" type="datetime" placeholder="选择结束时间" value-format="yyyy-MM-dd:HH:mm:ss" style="margin: 0px 10px">
@@ -9,7 +17,7 @@
     <el-button type="primary" icon="el-icon-plus" @click="$router.push('/song/admin/add')"></el-button>
     <el-table
       ref="multipleTable"
-      :data="songList"
+      :data="mediaList"
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange">
@@ -18,15 +26,18 @@
       </el-table-column>
       <el-table-column
         prop="id"
-        label="歌曲ID">
+        label="媒体ID">
       </el-table-column>
       <el-table-column
         prop="name"
-        label="歌曲名称">
+        label="媒体名称">
       </el-table-column>
       <el-table-column
         prop="author"
         label="歌手名称">
+        <template v-slot="scope">
+          <el-tag v-for="singer in scope.row.author.split(';')" :key="singer">{{ singer }}</el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         prop="publishDate"
@@ -71,16 +82,21 @@
 </template>
 
 <script>
+import mediaApi from "@/api/media";
+import categoryApi from "@/api/category";
 import songApi from '@/api/song'
 export default {
   name: "admin",
   data() {
     return {
-      songList: [],
+      mediaList: [],
+      mediaType: null,
+      mediaTypeList: [],
       total: 0,
       pageSize: 0,
       currentPage: 1,
       queryVo: {
+        current: 1,
         startTime: null,
         endTime: null,
         QueryText: '',
@@ -89,9 +105,20 @@ export default {
     }
   },
   created() {
+    this.initMediaTypeList()
     this.page({ current: this.currentPage, limit: 10 })
   },
   methods: {
+    changeMediaType(id) {
+      this.page({ ...this.queryVo, mediaType: id })
+    },
+    initMediaTypeList() {
+      categoryApi.getAll().then(
+        response => {
+          this.mediaTypeList = response.data
+        }
+      )
+    },
     remove(id) {
       this.$confirm('此操作将永久删除记录, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -143,7 +170,7 @@ export default {
       })
     },
     search() {
-      this.page({ current: 1, ...this.queryVo, startTime: this.queryVo.startTime })
+      this.page({ current: 1, ...this.queryVo, mediaType: this.mediaType })
     },
     changeShowStatus(event, songId) {
       songApi.changeShowStatus(songId, event).then(
@@ -160,10 +187,10 @@ export default {
       this.page({ current, limit: 10 })
     },
     page(queryVo) {
-      songApi.page(queryVo).then(
+      mediaApi.getMediaByPage(queryVo).then(
         response => {
           if (response.code === 200) {
-            this.songList = response.data.list
+            this.mediaList = response.data.list
             this.total = response.data.total
             this.pageSize = response.data.pageSize
             this.currentPage = response.data.currentPage

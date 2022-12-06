@@ -1,6 +1,6 @@
 <template>
   <div style="width: 99%; margin: 10px auto;">
-    <el-steps :active="this.$route.query.step == ''? 1:this.$route.query.step" simple>
+    <el-steps :active="this.$route.query.step === undefined? 1:this.$route.query.step" simple>
       <el-step title="填写信息" icon="el-icon-edit"></el-step>
       <el-step title="上传" icon="el-icon-upload"></el-step>
       <el-step title="检查" icon="el-icon-check"></el-step>
@@ -16,6 +16,15 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 400px;">
+        <div slot="header" class="clearfix">
+          <span>{{ attrGroup.groupName }}</span>
+        </div>
+        <el-form-item :label="attribute.name" v-for="attribute in attrGroup.attributeList" :key="attribute.id">
+          <!--          <el-input v-model="attribute.value"></el-input>-->
+          <component :is="attribute.inputName" :attributeId="attribute.id" @updateAttributeValue="updateAttributeValue"></component>
+        </el-form-item>
+      </el-card>
       <el-form-item label="歌曲名称">
         <el-input v-model="media.name" style="width: 220px;"></el-input>
       </el-form-item>
@@ -30,53 +39,15 @@
           value-format="yyyy-MM-dd HH:mm:ss">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="专辑">
-        <el-select
-          v-model="media.albumId"
-          filterable
-          remote
-          allow-create
-          reserve-keyword
-          placeholder="请输入歌手id或名称"
-          :remote-method="remoteMethod"
-          :loading="loading"
-          style="width: 220px">
-          <el-option
-            v-for="item in albumList"
-            :key="item.id"
-            :label="'专辑名称:' + item.name + '  专辑id:' + item.id"
-            :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 400px;">
-        <div slot="header" class="clearfix">
-        <span>{{ attrGroup.groupName }}</span>
-        </div>
-        <el-form-item :label="attribute.name" v-for="attribute in attrGroup.attributeList" :key="attribute.id">
-<!--          <el-input v-model="attribute.value"></el-input>-->
-          <component :is="attribute.inputName" :attributeId="attribute.id" @updateAttributeValue="updateAttributeValue"></component>
-        </el-form-item>
-      </el-card>
-<!--      <el-form-item label="立即上架">-->
-<!--        <el-switch v-model="media.nowPublish" :active-value="1" :inactive-value="0"></el-switch>-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="预上架时间"  v-show="!song.nowPublish">-->
-<!--        <el-date-picker-->
-<!--          v-model="song.prePublishDate"-->
-<!--          type="datetime"-->
-<!--          placeholder="选择预上架时间">-->
-<!--        </el-date-picker>-->
-<!--      </el-form-item>-->
-
       <el-form-item label="选择歌手">
         <el-select
           v-model="media.singerIdList"
           filterable
+          multiple
           remote
           reserve-keyword
           placeholder="请输入歌手id或名称"
-          :remote-method="queryAlbum"
+          :remote-method="querySingerByNameOrId"
           :loading="loading"
           style="width: 220px">
           <el-option
@@ -87,6 +58,35 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="专辑">
+        <el-select
+          v-model="media.albumId"
+          filterable
+          remote
+          allow-create
+          reserve-keyword
+          placeholder="请输入专辑id或名称"
+          :remote-method="queryAlbum"
+          :loading="loading"
+          style="width: 220px">
+          <el-option
+            v-for="item in albumList"
+            :key="item.id"
+            :label="'专辑名称:' + item.name + '  专辑id:' + item.id"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+<!--      <el-form-item label="立即上架">-->
+<!--        <el-switch v-model="media.nowPublish" :active-value="1" :inactive-value="0"></el-switch>-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="预上架时间"  v-show="!song.nowPublish">-->
+<!--        <el-date-picker-->
+<!--          v-model="song.prePublishDate"-->
+<!--          type="datetime"-->
+<!--          placeholder="选择预上架时间">-->
+<!--        </el-date-picker>-->
+<!--      </el-form-item>-->
       <el-form-item label="显示状态">
         <el-switch v-model="media.showStatus" :active-value="1" :inactive-value="0"></el-switch>
       </el-form-item>
@@ -240,6 +240,7 @@ export default {
     },
     nextUpload() {
       this.next()
+      this.media.author = 'null'
       mediaApi.insert(this.media).then(
         response => {
           if (response.code === 200) {

@@ -89,16 +89,10 @@ export const constantRoutes = [
     meta: { title: '媒体管理', icon: '' },
     children: [
       {
-        path: 'songAdmin',
-        name: 'SongAdmin',
-        component: () => import('@/components/media/song/admin'),
-        meta: { title: '歌曲管理', icon: '' }
-      },
-      {
-        path: 'mvAdmin',
-        name: 'MvAdmin',
-        component: () => import('@/components/media/mv/admin'),
-        meta: { title: 'MV管理', icon: '' }
+        path: 'mediaAdmin',
+        name: 'MediaAdmin',
+        component: () => import('@/components/media/admin'),
+        meta: { title: '媒体管理', icon: '' }
       },
       {
         path: 'admin/add',

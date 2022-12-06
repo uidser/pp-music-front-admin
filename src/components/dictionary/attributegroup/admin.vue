@@ -28,12 +28,12 @@
         </template>
       </el-table-column>
       <el-table-column
-      prop="showStatus"
-      label="快速展示">
-      <template v-slot="scope">
-        <el-tag :type="scope.row.showStatus? '': 'danger'">{{ scope.row.showStatus?'是': '否' }}</el-tag>
-      </template>
-    </el-table-column>
+        prop="showStatus"
+        label="快速展示">
+        <template v-slot="scope">
+          <el-tag :type="scope.row.showStatus? '': 'danger'">{{ scope.row.showStatus?'是': '否' }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="id"
         label="操作">
@@ -309,9 +309,7 @@ export default {
       this.showAttributeDialog = false
       this.attribute = {}
     },
-    addAttribute(id) {
-      this.expanded = id
-      this.getAttributeGroupById(id)
+    getComponent() {
       componentInputApi.getAll().then(
         response => {
           if (response.code === 200) {
@@ -319,6 +317,10 @@ export default {
           }
         }
       )
+    }, addAttribute(id) {
+      this.expanded = id
+      this.getAttributeGroupById(id)
+      this.getComponent()
       this.showAttributeDialog = true
     },
     edit(id, flag) {
@@ -327,6 +329,7 @@ export default {
         this.getAttributeGroupById(id)
         this.showDialog = true
       } else {
+        this.getComponent()
         this.getCategory()
         attributeApi.getById(id.replace('属性ID：', '')).then(
           response => {
