@@ -48,5 +48,11 @@ export default {
       method: 'post',
       data: category
     })
+  },
+  getMoreLevelCategory() {
+    return request({
+      url: BASE_CATEGORY_URL + '/getMoreLevelCategory',
+      method: 'get'
+    })
   }
 }

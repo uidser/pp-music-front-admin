@@ -5,7 +5,7 @@
       <el-step title="上传" icon="el-icon-upload"></el-step>
       <el-step title="检查" icon="el-icon-check"></el-step>
     </el-steps>
-    <el-form ref="form" :model="media" label-width="100px" style="margin: 20px 0px" v-show="step === undefined">
+    <el-form ref="form" :model="media" label-width="100px" style="margin: 20px 0px" v-show="step === undefined || step == 1">
       <el-form-item label="新增类型">
         <el-select v-model="categoryType" placeholder="请选择" style="width: 220px;" @change="changeCategoryType">
           <el-option
@@ -16,16 +16,17 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 400px;">
+      <el-card class="box-card" v-for="attrGroup in attributeGroupList" :key="attrGroup.id" style="width: 400px;" v-show="attrGroup.attributeList.length">
         <div slot="header" class="clearfix">
           <span>{{ attrGroup.groupName }}</span>
         </div>
         <el-form-item :label="attribute.name" v-for="attribute in attrGroup.attributeList" :key="attribute.id">
           <!--          <el-input v-model="attribute.value"></el-input>-->
           <component :is="attribute.inputName" :attributeId="attribute.id" @updateAttributeValue="updateAttributeValue"></component>
+          <el-switch v-model="attribute.showStatus" active-text="显示" inactive-text="不显示" :inactive-value="0" :active-value="1"></el-switch>
         </el-form-item>
       </el-card>
-      <el-form-item label="歌曲名称">
+      <el-form-item label="媒体名称">
         <el-input v-model="media.name" style="width: 220px;"></el-input>
       </el-form-item>
       <el-form-item label="专辑名称">
@@ -47,7 +48,7 @@
           remote
           reserve-keyword
           placeholder="请输入歌手id或名称"
-          :remote-method="querySingerByNameOrId"
+          :remote-method="remoteMethod"
           :loading="loading"
           style="width: 220px">
           <el-option
@@ -77,16 +78,16 @@
           </el-option>
         </el-select>
       </el-form-item>
-<!--      <el-form-item label="立即上架">-->
-<!--        <el-switch v-model="media.nowPublish" :active-value="1" :inactive-value="0"></el-switch>-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="预上架时间"  v-show="!song.nowPublish">-->
-<!--        <el-date-picker-->
-<!--          v-model="song.prePublishDate"-->
-<!--          type="datetime"-->
-<!--          placeholder="选择预上架时间">-->
-<!--        </el-date-picker>-->
-<!--      </el-form-item>-->
+      <el-form-item label="立即上架">
+        <el-switch v-model="media.nowPublish" :active-value="1" :inactive-value="0"></el-switch>
+      </el-form-item>
+      <el-form-item label="预上架时间"  v-show="!media.nowPublish">
+        <el-date-picker
+          v-model="media.prePublishDate"
+          type="datetime"
+          placeholder="选择预上架时间">
+        </el-date-picker>
+      </el-form-item>
       <el-form-item label="显示状态">
         <el-switch v-model="media.showStatus" :active-value="1" :inactive-value="0"></el-switch>
       </el-form-item>
@@ -94,15 +95,27 @@
         <el-switch v-model="media.isHaveMv" :active-value="1" :inactive-value="0"></el-switch>
       </el-form-item>
     </el-form>
-    <el-button @click="back">后退</el-button>
-    <el-button type="primary" @click="nextUpload" v-show="step === undefined">下一步, 上传媒体</el-button>
-    <el-button type="primary" @click="nexCheck" v-show="step == 2">下一步， 检查</el-button>
-    <el-button type="primary" @click="nextPublish" v-show="step == 3">下一步， 发布</el-button>
-    <el-upload class="upload-demo" drag :http-request="upload" v-show="step == 2" :auto-upload="true" :action="'https://www.baidu.com'">
+    <el-upload class="upload-demo" drag :http-request="uploadMediaUrl" v-show="step == 2" :auto-upload="true" :action="''" accept="mp3" :limit="1">
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+      <div class="el-upload__tip" slot="tip">请上传歌曲文件。只能上传mp3文件</div>
     </el-upload>
+    <el-progress :percentage="50" v-show="uploadProgress"></el-progress>
+    <el-upload class="upload-demo" drag :http-request="uploadPicture" v-show="step == 2" :auto-upload="true" :action="''" accept="mp4" :limit="1">
+      <i class="el-icon-upload"></i>
+      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__tip" slot="tip">请上传mv文件。只能上传mp4文件</div>
+    </el-upload>
+    <el-upload class="upload-demo" drag :http-request="upload" v-show="step == 2" :auto-upload="true" :action="''" accept="jpg,png" :limit="1">
+      <i class="el-icon-upload"></i>
+      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__tip" slot="tip">请上传歌曲封面文件。只能上传jpg,png文件</div>
+    </el-upload>
+    <el-button @click="back">后退</el-button>
+    <el-button type="primary" @click="nextUpload" v-show="step === undefined || step == 1">下一步, 上传媒体</el-button>
+    <el-button type="primary" @click="nexCheck" v-show="step == 2">下一步， 检查</el-button>
+    <el-button type="primary" @click="nextPublish" v-show="step == 3">下一步， 发布</el-button>
+
   </div>
 </template>
 
@@ -117,7 +130,7 @@ import attributeTextAreaInput from "@/components/attribute/attribute-text-area-i
 import attributeDateInput from "@/components/attribute/attribute-date-input"
 import attributeApi from '@/api/attribute'
 import categoryApi from '@/api/category'
-import singerApi from '@/api/singer'
+import singerApi from '@/api/user'
 import albumApi from "@/api/album";
 import media from "@/api/media/index";
 export default {
@@ -133,19 +146,26 @@ export default {
     return {
       albumList: [],
       media: {
-
+        nowPublish: 1
       },
       singerList: [],
       loading: false,
       categoryList: [],
       categoryType: null,
-      attributeGroupList: []
+      attributeGroupList: [],
+      uploadProgress: 0
     }
   },
   created() {
     this.getALlCategoryList()
   },
   methods: {
+    uploadPicture(file) {
+      this.upload(file, 'media_profile_picture_img')
+    },
+    uploadMediaUrl(file) {
+      this.upload(file, 'media_url')
+    },
     queryAlbumByNameOrId(queryText) {
       albumApi.query({ queryText }).then(
         response => {
@@ -156,11 +176,11 @@ export default {
       )
     },
     queryAlbum(queryText) {
-      if (queryText) {
+      if (queryText.length) {
         this.queryAlbumByNameOrId(queryText)
       }
     },
-    upload(file) {
+    upload(file, column) {
       console.log(file.file)
       uploadApi.getUploadToken().then(
         response => {
@@ -170,8 +190,7 @@ export default {
               mimeType: file.type,
               customVars: {
                 'x:mediaId': this.$route.query.id.toString(),
-                'x:type': 'song',
-                'x:column': 'media_url'
+                'x:column': column
               }
             }
             const config = {
@@ -180,12 +199,10 @@ export default {
             }
             const observable = qiniu.upload(file.file, null, response.data, putExtra, config)
             const subscription = observable.subscribe((res) => {
-
+              this.uploadProgress = res.total.percent
             }, (error) => {
 
             }, (res) => {
-              console.log(res.url)
-              console.log(res.key)
               this.$message.success('上传成功')
             })
           }
@@ -196,6 +213,7 @@ export default {
       this.attributeGroupList.map((attributeGroup) => {
         attributeGroup.attributeList.map((attribute) => {
           if (attribute.id === attributeId) {
+            console.log(attribute)
             attribute.value = value
           }
         })
@@ -240,13 +258,19 @@ export default {
     },
     nextUpload() {
       this.next()
+      let attributeValueList = []
+      for (let i = 0; i < this.attributeGroupList.length; i++) {
+        if (this.attributeGroupList[i].attributeList) {
+          this.packageAttributeValue(this.attributeGroupList[i].attributeList, attributeValueList)
+        }
+      }
+      this.media.attributeAttributeValueVoList = [...attributeValueList]
       this.media.author = 'null'
       mediaApi.insert(this.media).then(
         response => {
           if (response.code === 200) {
             this.$message.success('基本信息新增成功，请上传媒体')
             this.$router.push({ path: '/media/admin/add', query: { id: response.data, step: 2 }})
-            console.log(this.$route.params)
           }
         }
       )
@@ -257,8 +281,15 @@ export default {
       }
     },
     back() {
-      if (this.step > 1) {
-        this.step--
+      if (this.$route.query.step > 1) {
+        this.$router.push({ path: '/media/admin/add', query: { id: this.$route.query.id, step: this.$route.query.step - 1 }})
+      }
+    },
+    packageAttributeValue(attributeList, attributeValueList) {
+      for (let i = 0; i < attributeList.length; i++) {
+        if (attributeList[i]) {
+          attributeValueList.push({ id: attributeList[i].id, value: attributeList[i].value, showStatus: attributeList[i].showStatus })
+        }
       }
     }
   },

@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import singerApi from '@/api/singer/index'
+import singerApi from '@/api/user/index'
 
 export default {
   name: "attribute-singer-input",

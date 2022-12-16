@@ -11,7 +11,7 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
-
+import * as echarts from 'echarts'
 import '@/icons' // icon
 import '@/permission' // permission control
 
@@ -34,7 +34,7 @@ Vue.use(ElementUI, { locale })
 // Vue.use(ElementUI)
 
 Vue.config.productionTip = false
-
+Vue.prototype.$echarts = echarts
 new Vue({
   el: '#app',
   router,

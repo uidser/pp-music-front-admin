@@ -3,9 +3,10 @@
     <el-input v-model="queryVo.QueryText" placeholder="请输入内容" style="width: 10%;"></el-input>
     <el-button type="primary" icon="el-icon-search" @click="search" style="margin: 0px 10px"></el-button>
     <el-button type="primary" icon="el-icon-plus" @click="insert"></el-button>
+    <el-button type="primary" icon="el-icon-delete" @click="removeBatch">批量删除</el-button>
     <el-table
       ref="multipleTable"
-      :data="categoryList"
+      :data="singerList"
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange">
@@ -14,11 +15,15 @@
       </el-table-column>
       <el-table-column
         prop="id"
-        label="分类ID">
+        label="歌手ID">
       </el-table-column>
       <el-table-column
         prop="name"
-        label="分类名称">
+        label="歌手名称">
+      </el-table-column>
+      <el-table-column
+        prop="fansQuantity"
+        label="粉丝总数">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -42,6 +47,7 @@
         prop="id"
         label="操作">
         <template v-slot="scope">
+          <el-button type="primary" icon="el-icon-s-data" @click="singerDetail(scope.row.id)"></el-button>
           <el-button type="primary" icon="el-icon-edit" @click="edit(scope.row.id)"></el-button>
           <el-button type="primary" icon="el-icon-delete" @click="remove(scope.row.id)"></el-button>
         </template>
@@ -55,28 +61,51 @@
       :current-page="currentPage"
       @current-change="changeCurrent">
     </el-pagination>
-    <el-dialog title="分类信息" :visible.sync="showDialog">
-      <el-form :model="category">
-        <el-form-item label="ID" label-width="100px" v-if="category.id">
-          <el-input v-model="category.id" disabled autocomplete="off" style="width: 205px;"></el-input>
+    <el-dialog title="排行榜信息" :visible.sync="showDialog">
+      <el-form :model="singer">
+        <el-form-item label="ID" label-width="200px" v-if="singer.id">
+          <el-input v-model="singer.id" disabled autocomplete="off" style="width: 205px;"></el-input>
         </el-form-item>
-        <el-form-item label="分类父级" label-width="100px">
-          <el-select v-model="category.parentId" placeholder="请选择">
-            <el-option
-              v-for="item in categoryList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
-            </el-option>
-          </el-select>
+        <el-form-item label="歌手名称" label-width="200px">
+          <el-input v-model="singer.name" autocomplete="off" style="width: 205px;"></el-input>
         </el-form-item>
-        <el-form-item label="分类名称" label-width="100px">
-          <el-input v-model="category.name" autocomplete="off" style="width: 205px;"></el-input>
+        <el-form-item label="歌手头衔" label-width="200px">
+          <el-input v-model="singer.title" autocomplete="off" style="width: 205px;"></el-input>
         </el-form-item>
-        <el-form-item label="显示状态" label-width="100px">
+        <el-form-item label="歌手介绍" label-width="200px">
+          <el-input v-model="singer.detail" autocomplete="off" style="width: 205px;"></el-input>
+        </el-form-item>
+        <el-form-item label="歌手头像（地址）" label-width="200px">
+          <img :src="singer.profilePicture" v-if="singer.profilePicture" width="50" />
+          <el-input v-model="singer.profilePicture" autocomplete="off" style="width: 205px;"></el-input>
+        </el-form-item>
+        <el-form-item label="歌手分类" label-width="200px">
+          <el-cascader
+            v-model="singer.categoryIdList"
+            :props="{multiple: true,children: 'categoryChildrenList', label: 'name', value: 'id'}"
+            :options="categoryList">
+            <template slot-scope="{ node, data }">
+              <span>{{ data.name }}</span>
+<!--              <span v-if="!data.isLeaf"></span>-->
+            </template>
+          </el-cascader>
+        </el-form-item>
+        <el-form-item label="乐队" label-width="200px">
           <el-switch
             style="display: block"
-            v-model="category.showStatus"
+            v-model="singer.type"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="显示状态" label-width="200px">
+          <el-switch
+            style="display: block"
+            v-model="singer.showStatus"
             active-color="#13ce66"
             inactive-color="#ff4949"
             active-text="显示"
@@ -95,24 +124,39 @@
 </template>
 
 <script>
-import categoryApi from '@/api/category/index'
+import singerApi from "@/api/user/singer/singer"
+import categoryApi from "@/api/category"
 export default {
   name: "admin",
   data() {
     return {
       queryVo: {},
-      categoryList: [],
+      singerList: [],
       total: 0,
       pageSize: 0,
       currentPage: 1,
       showDialog: false,
-      category: {}
+      singer: {},
+      mediaTypeList: [],
+      categoryList: []
     }
   },
   created() {
     this.page({ ...this.queryVo, current: this.currentPage, limit: 10 })
   },
   methods: {
+    singerDetail(id) {
+      this.$router.push('/singer/detail' + '/' + id)
+    },
+    removeBatch() {
+      let array = []
+      if (this.multipleSelection.length > 0) {
+        this.multipleSelection.forEach((singer) => {
+          array.push(singer.id)
+        })
+      }
+      this.remove(array)
+    },
     remove(id) {
       this.$confirm('此操作将永久删除记录, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -124,7 +168,7 @@ export default {
         } else {
           id = [id]
         }
-        categoryApi.batchDelete(id).then(
+        singerApi.batchDelete(id).then(
           response => {
             if (response.code === 200) {
               this.$message.success('删除成功')
@@ -142,30 +186,33 @@ export default {
       })
     },
     edit(id) {
-
+      singerApi.get(id).then(
+        response => {
+          if (response.code === 200) {
+            this.singer = response.data
+            this.showDialog = true
+          }
+        }
+      )
     },
     commit() {
-      if (this.category.id) {
-        categoryApi.edit(this.category).then(
+      if (this.singer.id) {
+        singerApi.edit(this.singer).then(
           response => {
             if (response.code === 200) {
-              this.$message.success('修改成功')
+              this.$message.success('新增成功')
               this.page({ ...this.queryVo, current: 1, limit: 10 })
-              this.cancel()
-            } else {
-              this.$message.error('修改失败')
+              this.showDialog = false
             }
           }
         )
       } else {
-        categoryApi.insert(this.category).then(
+        singerApi.insert(this.singer).then(
           response => {
             if (response.code === 200) {
               this.$message.success('新增成功')
-              this.cancel()
               this.page({ ...this.queryVo, current: 1, limit: 10 })
-            } else {
-              this.$message.error('新增失败')
+              this.showDialog = false
             }
           }
         )
@@ -173,24 +220,30 @@ export default {
     },
     cancel() {
       this.showDialog = false
-      this.category = {}
+      this.singer = {}
     },
     changeCurrent(current) {
       this.page({ ...this.queryVo, current, limit: 10 })
     },
-    insert() {
-      categoryApi.getAll().then(
+    forEachCategoryList() {
+      for (let i = 0; i < this.categoryList.length; i++) {
+        this.packageMoreCategoryList(this.categoryList[i])
+      }
+    },
+    async insert() {
+      await categoryApi.getMoreLevelCategory().then(
         response => {
           this.categoryList = response.data
         }
       )
+      this.forEachCategoryList()
       this.showDialog = true
     },
     search() {
       this.page({ ...this.queryVo, current: 1, limit: 10 })
     },
     changeShowStatus(event, id) {
-      categoryApi.changeShowStatus(event, id).then(
+      singerApi.changeShowStatus(event, id).then(
         response => {
           if (response.code === 200) {
             this.$message.success('修改成功')
@@ -202,10 +255,10 @@ export default {
       )
     },
     page(queryVo) {
-      categoryApi.page(queryVo).then(
+      singerApi.page(queryVo).then(
         response => {
           if (response.code === 200) {
-            this.categoryList = response.data.list
+            this.singerList = response.data.list
             this.total = response.data.total
             this.pageSize = response.data.pageSize
             this.currentPage = response.data.currentPage
@@ -224,6 +277,16 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
+    },
+    packageMoreCategoryList(categoryListElement) {
+      if (categoryListElement.categoryChildrenList.length) {
+        for (let i = 0; i < categoryListElement.categoryChildrenList.length; i++) {
+          this.packageMoreCategoryList(categoryListElement.categoryChildrenList[i])
+        }
+      } else {
+        console.log(categoryListElement.name)
+        categoryListElement.categoryChildrenList = undefined
+      }
     }
   }
 }

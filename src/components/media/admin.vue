@@ -14,7 +14,7 @@
     </el-date-picker>
     <el-button type="primary" icon="el-icon-search" @click="search"></el-button>
     <el-button type="primary" icon="el-icon-delete" @click="batchDelete">批量删除</el-button>
-    <el-button type="primary" icon="el-icon-plus" @click="$router.push('/song/admin/add')"></el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="$router.push('/media/admin/add')"></el-button>
     <el-table
       ref="multipleTable"
       :data="mediaList"
@@ -41,7 +41,7 @@
       </el-table-column>
       <el-table-column
         prop="publishDate"
-        label="发布日期">
+        label="发行日期">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -125,7 +125,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        songApi.batchDelete([id]).then(
+        mediaApi.batchDelete([id]).then(
           response => {
             if (response.code === 200) {
               this.$message.success('删除成功')
@@ -152,7 +152,7 @@ export default {
         for (let i = 0; i < this.multipleSelection.length; i++) {
           array.push(this.multipleSelection[i].id)
         }
-        songApi.batchDelete(array).then(
+        mediaApi.batchDelete(array).then(
           response => {
             if (response.code === 200) {
               this.$message.success('批量删除成功')
@@ -173,10 +173,11 @@ export default {
       this.page({ current: 1, ...this.queryVo, mediaType: this.mediaType })
     },
     changeShowStatus(event, songId) {
-      songApi.changeShowStatus(songId, event).then(
+      mediaApi.changeShowStatus(songId, event).then(
         response => {
           if (response.code === 200) {
             this.$message.success('修改成功')
+            this.page({ current: 1, ...this.queryVo, mediaType: this.mediaType })
           } else {
             this.$message.error('修改失败')
           }

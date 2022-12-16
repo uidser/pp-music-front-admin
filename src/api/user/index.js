@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const BASE_SINGER_URL = '/back/song/singer'
+const BASE_SINGER_URL = '/back/song/user'
 
 export default {
   query(queryText) {

@@ -57,7 +57,6 @@ export const constantRoutes = [
   {
     path: '/dictionary',
     component: Layout,
-    redirect: '/admin',
     name: 'Dictionary',
     meta: { title: '字典管理', icon: '' },
     children: [
@@ -65,26 +64,25 @@ export const constantRoutes = [
         path: 'admin',
         name: 'DictionaryAdmin',
         component: () => import('@/components/dictionary/admin'),
-        meta: { title: '字典设置', icon: '' }
+        meta: { title: '字典管理', icon: '' }
       },
       {
         path: 'attributeGroupAdmin',
         name: 'AttributeGroupAdmin',
         component: () => import('@/components/dictionary/attributegroup/admin'),
-        meta: { title: '属性分组设置', icon: '' }
+        meta: { title: '属性分组管理', icon: '' }
       },
       {
         path: 'categoryAdmin',
         name: 'CategoryAdmin',
         component: () => import('@/components/category/admin'),
-        meta: { title: '分类设置', icon: '' }
+        meta: { title: '分类管理', icon: '' }
       }
     ]
   },
   {
     path: '/media',
     component: Layout,
-    redirect: '/admin',
     name: 'Media',
     meta: { title: '媒体管理', icon: '' },
     children: [
@@ -99,6 +97,53 @@ export const constantRoutes = [
         name: 'MediaAdd',
         component: () => import('@/components/media/add/add'),
         meta: { title: '新增媒体', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/rank',
+    component: Layout,
+    name: 'Rank',
+    meta: { title: '排行榜管理', icon: '' },
+    children: [
+      {
+        path: 'rankAdmin',
+        name: 'RankAdmin',
+        component: () => import('@/components/rank/admin'),
+        meta: { title: '排行榜管理', icon: '' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'RankDetail',
+        component: () => import('@/components/rank/detail/detail'),
+        meta: { title: '排行榜详情', icon: '' },
+        hidden: true
+      },
+      {
+        path: 'singleMediaMap/:mediaId/:rankId',
+        name: 'SingleMediaMap',
+        component: () => import('@/components/rank/singlemediamap/singlemediamap'),
+        hidden: true
+      }
+    ]
+  },
+  {
+    path: '/user',
+    component: Layout,
+    name: 'User',
+    meta: { title: '用户管理', icon: '' },
+    children: [
+      {
+        path: 'userAdmin',
+        name: 'UserAdmin',
+        component: () => import('@/components/media/admin'),
+        meta: { title: '用户管理', icon: '' }
+      },
+      {
+        path: 'singerAdmin',
+        name: 'SingerAdmin',
+        component: () => import('@/components/user/singer/singer'),
+        meta: { title: '歌手管理', icon: '' }
       }
     ]
   },
