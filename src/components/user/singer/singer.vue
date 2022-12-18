@@ -86,7 +86,6 @@
             :options="categoryList">
             <template slot-scope="{ node, data }">
               <span>{{ data.name }}</span>
-<!--              <span v-if="!data.isLeaf"></span>-->
             </template>
           </el-cascader>
         </el-form-item>
@@ -207,6 +206,11 @@ export default {
           }
         )
       } else {
+        let array = []
+        for (let i = 0; i < this.singer.categoryIdList.length; i++) {
+          array.push(this.singer.categoryIdList[i][this.singer.categoryIdList[i].length - 1])
+        }
+        this.singer.categoryIdList = array
         singerApi.insert(this.singer).then(
           response => {
             if (response.code === 200) {
@@ -284,7 +288,6 @@ export default {
           this.packageMoreCategoryList(categoryListElement.categoryChildrenList[i])
         }
       } else {
-        console.log(categoryListElement.name)
         categoryListElement.categoryChildrenList = undefined
       }
     }
