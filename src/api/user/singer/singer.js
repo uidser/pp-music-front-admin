@@ -22,5 +22,12 @@ export default {
       url: BASE_SINGER_URL + '/get' + '/' + id,
       method: 'get'
     })
+  },
+  edit(singer) {
+    return request({
+      url: BASE_SINGER_URL + '/edit',
+      method: 'put',
+      data: singer
+    })
   }
 }

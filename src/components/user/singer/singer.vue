@@ -185,6 +185,7 @@ export default {
       })
     },
     edit(id) {
+      this.getThreeLevelCategoryList()
       singerApi.get(id).then(
         response => {
           if (response.code === 200) {
@@ -194,8 +195,16 @@ export default {
         }
       )
     },
-    commit() {
+    packageCategoryIdList: function() {
+      let array = []
+      for (let i = 0; i < this.singer.categoryIdList.length; i++) {
+        array.push(this.singer.categoryIdList[i][this.singer.categoryIdList[i].length - 1])
+      }
+      this.singer.lastCategoryIdList = array
+    },
+    async commit() {
       if (this.singer.id) {
+        await this.packageCategoryIdList()
         singerApi.edit(this.singer).then(
           response => {
             if (response.code === 200) {
@@ -206,11 +215,7 @@ export default {
           }
         )
       } else {
-        let array = []
-        for (let i = 0; i < this.singer.categoryIdList.length; i++) {
-          array.push(this.singer.categoryIdList[i][this.singer.categoryIdList[i].length - 1])
-        }
-        this.singer.categoryIdList = array
+        await this.packageCategoryIdList()
         singerApi.insert(this.singer).then(
           response => {
             if (response.code === 200) {
@@ -234,13 +239,15 @@ export default {
         this.packageMoreCategoryList(this.categoryList[i])
       }
     },
-    async insert() {
+    getThreeLevelCategoryList: async function() {
       await categoryApi.getMoreLevelCategory().then(
         response => {
           this.categoryList = response.data
         }
       )
       this.forEachCategoryList()
+    }, async insert() {
+      await this.getThreeLevelCategoryList()
       this.showDialog = true
     },
     search() {
