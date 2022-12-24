@@ -29,5 +29,18 @@ export default {
       method: 'put',
       data: singer
     })
+  },
+  changeShowStatus(singerId, showStatus) {
+    return request({
+      url: BASE_SINGER_URL + '/changeShowStatus' + '/' + singerId + '/' + showStatus,
+      method: 'post'
+    })
+  },
+  batchDelete(ids) {
+    return request({
+      url: BASE_SINGER_URL + '/batchDelete',
+      method: 'delete',
+      data: ids
+    })
   }
 }
