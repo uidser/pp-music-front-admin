@@ -101,12 +101,12 @@
       <div class="el-upload__tip" slot="tip">请上传歌曲文件。只能上传mp3文件</div>
     </el-upload>
     <el-progress :percentage="50" v-show="uploadProgress"></el-progress>
-    <el-upload class="upload-demo" drag :http-request="uploadPicture" v-show="step == 2" :auto-upload="true" :action="''" accept="mp4" :limit="1">
+    <el-upload class="upload-demo" drag :http-request="uploadMv" v-show="step == 2" :auto-upload="true" :action="''" accept="mp4" :limit="1">
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       <div class="el-upload__tip" slot="tip">请上传mv文件。只能上传mp4文件</div>
     </el-upload>
-    <el-upload class="upload-demo" drag :http-request="upload" v-show="step == 2" :auto-upload="true" :action="''" accept="jpg,png" :limit="1">
+    <el-upload class="upload-demo" drag :http-request="uploadPicture" v-show="step == 2" :auto-upload="true" :action="''" accept="jpg,png" :limit="1">
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       <div class="el-upload__tip" slot="tip">请上传歌曲封面文件。只能上传jpg,png文件</div>
@@ -128,11 +128,9 @@ import attributeInput from "@/components/attribute/attribute-input"
 import attributeSingerInput from "@/components/attribute/attribute-singer-input"
 import attributeTextAreaInput from "@/components/attribute/attribute-text-area-input"
 import attributeDateInput from "@/components/attribute/attribute-date-input"
-import attributeApi from '@/api/attribute'
 import categoryApi from '@/api/category'
-import singerApi from '@/api/user'
-import albumApi from "@/api/album";
-import media from "@/api/media/index";
+import singerApi from '@/api/user/index'
+import albumApi from "@/api/album"
 export default {
   name: "index",
   components: {
@@ -165,6 +163,9 @@ export default {
     },
     uploadMediaUrl(file) {
       this.upload(file, 'media_url')
+    },
+    uploadMv(file) {
+      this.upload(file, 'mv')
     },
     queryAlbumByNameOrId(queryText) {
       albumApi.query({ queryText }).then(
@@ -258,13 +259,17 @@ export default {
     },
     nextUpload() {
       this.next()
-      let attributeValueList = []
-      for (let i = 0; i < this.attributeGroupList.length; i++) {
-        if (this.attributeGroupList[i].attributeList) {
-          this.packageAttributeValue(this.attributeGroupList[i].attributeList, attributeValueList)
+      if (this.attributeGroupList) {
+        if (this.attributeGroupList.length > 0) {
+          let attributeValueList = []
+          for (let i = 0; i < this.attributeGroupList.length; i++) {
+            if (this.attributeGroupList[i].attributeList) {
+              this.packageAttributeValue(this.attributeGroupList[i].attributeList, attributeValueList)
+            }
+          }
+          this.media.attributeAttributeValueVoList = [...attributeValueList]
         }
       }
-      this.media.attributeAttributeValueVoList = [...attributeValueList]
       this.media.author = 'null'
       mediaApi.insert(this.media).then(
         response => {

@@ -30,7 +30,7 @@ export default {
       data: singer
     })
   },
-  changeShowStatus(singerId, showStatus) {
+  changeShowStatus(showStatus, singerId) {
     return request({
       url: BASE_SINGER_URL + '/changeShowStatus' + '/' + singerId + '/' + showStatus,
       method: 'post'

@@ -136,7 +136,7 @@ export const constantRoutes = [
       {
         path: 'userAdmin',
         name: 'UserAdmin',
-        component: () => import('@/components/media/admin'),
+        component: () => import('@/components/user/user'),
         meta: { title: '用户管理', icon: '' }
       },
       {
@@ -144,6 +144,34 @@ export const constantRoutes = [
         name: 'SingerAdmin',
         component: () => import('@/components/user/singer/singer'),
         meta: { title: '歌手管理', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/album',
+    component: Layout,
+    name: 'Album',
+    meta: { title: '专辑管理', icon: '' },
+    children: [
+      {
+        path: 'admin',
+        name: 'AlbumAdmin',
+        component: () => import('@/components/album/album'),
+        meta: { title: '专辑管理', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/songList',
+    component: Layout,
+    name: 'SongList',
+    meta: { title: '歌单管理', icon: '' },
+    children: [
+      {
+        path: 'admin',
+        name: 'SongListAdmin',
+        component: () => import('@/components/songlist/songlist'),
+        meta: { title: '歌单管理', icon: '' }
       }
     ]
   },

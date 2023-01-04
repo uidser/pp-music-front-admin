@@ -6,30 +6,30 @@
     remote
     allow-create
     reserve-keyword
-    placeholder="请输入歌手id或名称"
+    placeholder="请输入媒体id或名称"
     :remote-method="remoteMethod"
     :loading="loading"
     style="width: 220px"
     @input="() => {this.$emit('update', this.value)}">
     <el-option
-      v-for="item in singerList"
+      v-for="item in mediaList"
       :key="item.id"
-      :label="'歌手名称:' + item.name + '  歌手id:' + item.id"
+      :label="'媒体名称:' + item.name + '  媒体id:' + item.id"
       :value="item.id">
     </el-option>
   </el-select>
 </template>
 
 <script>
-import singerApi from '@/api/user/index'
+import mediaAPi from '@/api/media'
 export default {
-  name: "attribute-singer-input",
+  name: "attribute-media-input",
   props: {
     attributeId: {
       type: Number,
       default: 0
     },
-    singerList: {
+    mediaList: {
       type: Array
     },
     value: {
@@ -43,10 +43,10 @@ export default {
   },
   methods: {
     querySingerByNameOrId(queryText) {
-      singerApi.query(queryText).then(
+      mediaAPi.getMediaByPage({ queryText: queryText, current: 1, limit: 10 }).then(
         response => {
           if (response.code === 200) {
-            this.singerList = response.data
+            this.mediaList = response.data.list
           }
         }
       )
